@@ -53,7 +53,7 @@ class Compansation():
         self.drawCircle(p1, p2, center, radius, (0, 255, 0))
 
     def calculateL(self, alpha):
-        return self.offset / math.tan( alpha / 2)
+        return abs(self.offset / math.tan( alpha / 2))
 
     def calculateL2(self, vector):
         return math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
@@ -98,8 +98,8 @@ class Compansation():
         new_p1, new_p21, u_vector21 = self.calculateLineCompensationPoint(p1, p2)
         new_p23, new_p3, u_vector32 = self.calculateLineCompensationPoint(p2, p3)
 
-        if self.type:
-            degree = 360. - degree
+        # if self.type:
+        #     degree = 360. - degree
 
         l = self.calculateL(degree)
 
@@ -109,7 +109,7 @@ class Compansation():
         dot = vector1[0] * vector2[0] + vector1[1] * vector2[1]
 
         if dot <= 0:
-            l = self.calculateL(360 - degree)
+            # l = self.calculateL(360 - degree)
             tmp_p = self.shorteningOperator(new_p21, l, u_vector21)
             return [new_p1, tmp_p, new_p3]
         else:

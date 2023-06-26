@@ -103,22 +103,24 @@ def toolsDrawer(obj, contents):
     for points,parameter  in point_param_lst:
         parameter = parameter[0]
         num_points = len(points)
-        # if num_points == 3:
-        for i in range(0, num_points - 1):
-            if num_points == 4 and i == 1:
+        i = 0
+        signal = True
+        while i <= num_points - 2:
+            if num_points == 4 and i == 1 and signal:
                 p1 = (int(points[i][0]), int(points[i][1]))
                 p2 = (int(points[i + 1][0]), int(points[i + 1][1]))
                 result_points.extend([p1,p2])
                 del points[i]
-                i -= 1
+                i = 1
+                signal = False
                 continue
             p1 = (int(points[i][0]), int(points[i][1]))
             p2 = (int(points[i + 1][0]), int(points[i + 1][1]))
             param1 = parameter[i]
             param2 = parameter[i + 1]
 
-            # cv.circle(obj.board, p1, 3, (0, 0, 255), 2)
-            # cv.circle(obj.board, p2, 3, (0, 0, 255), 2)
+            cv.circle(obj.board, p1, 3, (0, 0, 255), 2)
+            cv.circle(obj.board, p2, 3, (0, 0, 255), 2)
 
             if len(param1) == 2 and len(param2) == 2: # line 2 line
                 result_points.extend([p1, p2])
@@ -144,14 +146,16 @@ def toolsDrawer(obj, contents):
 
             else:
                 raise ValueError("You may have entered the wrong format in the parameters file")
+            i += 1
     for i in range(0, len(result_points) - 1):
         obj.drawToolsLine(result_points[i], result_points[i + 1])
     if obj.work_pieces:
         obj.drawToolsLine(result_points[0], result_points[-1])
 
 if __name__ == '__main__':
-    obj = Compansation(offset=8, type=0)
-    contents = read("./parameters.txt")
+    obj = Compansation(offset=8, type=0,work_pieces=False)
+    # contents = read("./parameters.txt")
+    contents = read("./demo1.txt")
 
     workPiecesDrawer(obj, contents)
     toolsDrawer(obj, contents)
