@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 class Compansation():
-    def __init__(self, offset=10, type=0):
+    def __init__(self, offset=10, type=0, work_pieces = True):
 
         '''
         :param offset: the radius of tools
@@ -12,6 +12,7 @@ class Compansation():
 
         self.offset = offset
         self.type = type
+        self.work_pieces = work_pieces
         self.board = np.zeros((500, 500, 3), dtype=np.uint8)
         self.board.fill(255)
 
@@ -155,3 +156,69 @@ class Compansation():
     def shorteningOperator(self, new_p21, l, u_vector21):
         tmp_p = (new_p21[0] - l * u_vector21[0], new_p21[1] - l * u_vector21[1])
         return tmp_p
+
+    def generateArcPoints(self, center_x, center_y, radius, start_point, end_point, resolution):
+        start_vector = [-(start_point[0] - center_x), -(start_point[1] - center_y)]
+        end_vector = [-(end_point[0] - center_x), -(end_point[1] - center_y)]
+
+        start_angle = math.atan2(start_vector[1], start_vector[0])
+        end_angle = math.atan2(end_vector[1], end_vector[0])
+
+        angle_range = end_angle - start_angle
+
+        angle_increment = angle_range / resolution
+
+        arc_points = []
+        for i in range(resolution):
+            angle = start_angle + i * angle_increment
+            x = center_x - radius * math.cos(angle)
+            y = center_y - radius * math.sin(angle)
+            arc_points.append((int(x), int(y)))
+
+        return arc_points
+
+    def toolsPathPlanning(self, points_lst, param1, param2, center):
+        vector1 = (param1[0] - center[0], param1[1] - center[1])
+        vector2 = (param2[0] - center[0], param2[1] - center[1])
+        mult = vector1[0] * vector2[1] - vector1[1] * vector2[0]
+        new_points_lst = []
+        if mult > 0:
+            if self.type == 0:# G42
+                for point in points_lst:
+                    vector = (center[0] - point[0], center[1] - point[1])
+                    l2_vector = self.calculateL2(vector)
+                    uoa = (vector[0] / l2_vector, vector[1] / l2_vector)
+                    new_x = point[0] + uoa[0] * self.offset
+                    new_y = point[1] + uoa[1] * self.offset
+                    new_points_lst.append((int(new_x), int(new_y)))
+            else:
+                for point in points_lst:
+                    vector = (center[0] - point[0], center[1] - point[1])
+                    l2_vector = self.calculateL2(vector)
+                    uoa = (vector[0] / l2_vector, vector[1] / l2_vector)
+                    new_x = point[0] - uoa[0] * self.offset
+                    new_y = point[1] - uoa[1] * self.offset
+                    new_points_lst.append((int(new_x), int(new_y)))
+        else:
+            if self.type == 1:# G41
+                for point in points_lst:
+                    vector = (center[0] - point[0], center[1] - point[1])
+                    l2_vector = self.calculateL2(vector)
+                    uoa = (vector[0] / l2_vector, vector[1] / l2_vector)
+                    new_x = point[0] + uoa[0] * self.offset
+                    new_y = point[1] + uoa[1] * self.offset
+
+                    new_points_lst.append((int(new_x), int(new_y)))
+            else:
+                for point in points_lst:
+                    vector = (center[0] - point[0], center[1] - point[1])
+                    l2_vector = self.calculateL2(vector)
+                    uoa = (vector[0] / l2_vector, vector[1] / l2_vector)
+                    new_x = point[0] - uoa[0] * self.offset
+                    new_y = point[1] - uoa[1] * self.offset
+                    new_points_lst.append((int(new_x), int(new_y)))
+        return new_points_lst
+
+
+
+

@@ -1,4 +1,4 @@
-from compansation import Compansation, cv
+from compansation import Compansation, cv, math
 from file_operation import read
 
 def workPiecesDrawer(obj, contents):
@@ -40,14 +40,9 @@ def workPiecesDrawer(obj, contents):
 
 def stateRecorder(start, middle, end):
     parameter_lst = []
-    length1, length2, length3 = len(start), len(middle), len(end)
-    tmp_state_lst = [length1, length2, length3]
     tmp_parameter_lst= [start, middle, end]
-    for length, parameter in zip(tmp_state_lst, tmp_parameter_lst):
-        if length == 5:
-            parameter_lst.append(parameter[2:])
-        else:
-            parameter_lst.append([0])
+    for parameter in tmp_parameter_lst:
+        parameter_lst.append(parameter)
     return parameter_lst
 
 def isPointOnLine(x1, y1, x2, y2, x, y):
@@ -58,14 +53,41 @@ def isPointOnLine(x1, y1, x2, y2, x, y):
             return True
     return False
 
+def centerCompensation(center, p1, p2, new_p1, new_p2):
+    new_p1x = new_p1[0] - p1[0]
+    new_p1y = new_p1[1] - p1[1]
+
+    new_p2x = new_p2[0] - p2[0]
+    new_p2y = new_p2[1] - p2[1]
+
+    new_x = center[0] + new_p1x + new_p2x
+    nex_y = center[1] + new_p1y + new_p2y
+
+    return new_x, nex_y
+
+
+def directionJudgement(p1, p2, center):
+    v1 = [p1[0] - center[0], p1[1] - center[1]]
+    v2 = [p2[0] - center[0], p2[1] - center[1]]
+
+    cross_product = v1[0] * v2[1] - v1[1] * v2[0]
+
+    if cross_product > 0:
+        radius = -math.sqrt(v1[0] ** 2 + v1[1] ** 2)
+    else:
+        radius = math.sqrt(v1[0] ** 2 + v1[1] ** 2)
+
+    return radius
+
 def toolsDrawer(obj, contents):
-    points_lst = []
-    parameter_lst = []
+    point_param_lst = []
     for i in range(0, len(contents)):
         if i % 2 == 0 and i + 2 <= len(contents) - 1:
             start = tuple(contents[i])
             middle = tuple(contents[i + 1])
             end = tuple(contents[i + 2])
+            points_lst = []
+            parameter_lst = []
 
             tmp_parameter_lst = stateRecorder(start, middle, end)
             parameter_lst.append(tmp_parameter_lst)
@@ -73,27 +95,59 @@ def toolsDrawer(obj, contents):
             new_points = obj.typeJudgement((start[0], start[1]), (middle[0], middle[1]), (end[0], end[1]))
             for i in range(0, len(new_points)):
                 points_lst.append((int(new_points[i][0]), int(new_points[i][1])))
+            point_param_lst.append([points_lst, parameter_lst])
         else:
             continue
-            
-    #TODO: finish the trajectory of tools(line and radian)
-    for i in range(-1,2):
-        signal1 = isPointOnLine(contents[0][0], contents[0][1], contents[-1][0], contents[-1][1], points_lst[i][0], points_lst[i][1])
-        signal2 = isPointOnLine(contents[0][0], contents[0][1], contents[1][0], contents[1][1], points_lst[i][0], points_lst[i][1])
-        signal = signal1 or signal2
-        if signal:
-            del points_lst[0]
-            del points_lst[-1]
 
-            del parameter_lst[0]
-            del parameter_lst[-1]
-            break
+    result_points = []
+    for points,parameter  in point_param_lst:
+        parameter = parameter[0]
+        num_points = len(points)
+        # if num_points == 3:
+        for i in range(0, num_points - 1):
+            if num_points == 4 and i == 1:
+                p1 = (int(points[i][0]), int(points[i][1]))
+                p2 = (int(points[i + 1][0]), int(points[i + 1][1]))
+                result_points.extend([p1,p2])
+                del points[i]
+                i -= 1
+                continue
+            p1 = (int(points[i][0]), int(points[i][1]))
+            p2 = (int(points[i + 1][0]), int(points[i + 1][1]))
+            param1 = parameter[i]
+            param2 = parameter[i + 1]
 
-    for i in range(0, len(points_lst)):
-        if i + 1 == len(points_lst):
-            i = -1
-        obj.drawToolsLine((int(points_lst[i][0]), int(points_lst[i][1])),(int(points_lst[i + 1][0]), int(points_lst [i + 1][1])))
-        # cv.circle(obj.board, points_lst[i], 3, (0,0,255), 2)
+            # cv.circle(obj.board, p1, 3, (0, 0, 255), 2)
+            # cv.circle(obj.board, p2, 3, (0, 0, 255), 2)
+
+            if len(param1) == 2 and len(param2) == 2: # line 2 line
+                result_points.extend([p1, p2])
+
+            elif len(param1) == 2 and len(param2) == 5: # line 2 circle
+                center = (param2[2], param2[3])
+                radius = param2[4]
+                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 100)
+                new_points_lst = obj.toolsPathPlanning(points_lst, param1, param2, center)
+
+                result_points.extend([p1, *new_points_lst, p2])
+
+            elif len(param1) == 5 and len(param2) == 2: # circle 2 line
+                result_points.extend([p1, p2])
+
+            elif len(param1) == 5 and len(param2) == 5: # circle 2 circle
+                center = (param2[2], param2[3])
+                radius = param2[4]
+                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 100)
+                new_points_lst = obj.toolsPathPlanning(points_lst, param1, param2, center)
+
+                result_points.extend([p1, *new_points_lst, p2])
+
+            else:
+                raise ValueError("You may have entered the wrong format in the parameters file")
+    for i in range(0, len(result_points) - 1):
+        obj.drawToolsLine(result_points[i], result_points[i + 1])
+    if obj.work_pieces:
+        obj.drawToolsLine(result_points[0], result_points[-1])
 
 if __name__ == '__main__':
     obj = Compansation(offset=8, type=0)
