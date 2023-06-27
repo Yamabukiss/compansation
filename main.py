@@ -1,4 +1,5 @@
 from compansation import Compansation, cv, math
+from ui import uiDesign
 from file_operation import read
 
 def workPiecesDrawer(obj, contents):
@@ -79,6 +80,52 @@ def directionJudgement(p1, p2, center):
 
     return radius
 
+def circleJudgement(start, middle, end):
+    len1, len2, len3 = len(start), len(middle), len(end)
+
+    if len1 == 2 and len2 == 2 and len3 == 5: # line 2 circle
+        vector1 = (middle[0] - start[0], middle[1] - start[1])
+        uvector1 = (vector1[0] / obj.calculateL2(vector1), vector1[1] / obj.calculateL2(vector1))
+
+        center = (end[2], end[3])
+        vector2 = (middle[0] - center[0], middle[1] - center[1])
+        uvector2 = (vector2[0] / obj.calculateL2(vector2), vector2[1] / obj.calculateL2(vector2))
+        u_orth_vector = [-uvector2[1], uvector2[0]]
+
+        degree = obj.degreeFromDotUnit(uvector1, u_orth_vector)
+        new_points = obj.typeJudgementDegree((start[0], start[1]), (middle[0], middle[1]), (end[0], end[1]), degree)
+        return new_points
+
+    elif len1 == 2 and len2 == 5 and len3 == 2: # circle 2 line
+        center = (middle[2], middle[3])
+        vector1 = (middle[0] - center[0], middle[1] - center[1])
+        uvector1 = (vector1[0] / obj.calculateL2(vector1), vector1[1] / obj.calculateL2(vector1))
+        u_orth_vector = [-uvector1[1], uvector1[0]]
+
+        vector2 = (end[0] - middle[0], end[1] - middle[1])
+        uvector2 = (vector2[0] / obj.calculateL2(vector2), vector2[1] / obj.calculateL2(vector2))
+        degree = obj.degreeFromDotUnit(u_orth_vector, uvector2)
+        new_points = obj.typeJudgementDegree((start[0], start[1]), (middle[0], middle[1]), (end[0], end[1]), degree)
+        return new_points
+
+    elif len1 == 2 and len2 == 5 and len3 == 5: # circle 2 circle
+        center1 = (middle[2], middle[3])
+        center2 = (end[2], end[3])
+
+        vector1 = (middle[0] - center1[0], middle[1] - center1[1])
+        uvector1 = (vector1[0] / obj.calculateL2(vector1), vector1[1] / obj.calculateL2(vector1))
+        u_orth_vector1 = [-uvector1[1], uvector1[0]]
+
+        vector2 = (middle[0] - center2[0], middle[1] - center2[1])
+        uvector2 = (vector2[0] / obj.calculateL2(vector2), vector2[1] / obj.calculateL2(vector2))
+        u_orth_vector2 = [-uvector2[1], uvector2[0]]
+        degree = obj.degreeFromDotUnit(u_orth_vector1, u_orth_vector2)
+        new_points = obj.typeJudgementDegree((start[0], start[1]), (middle[0], middle[1]), (end[0], end[1]), degree)
+        return new_points
+    else :
+        return None
+
+
 def toolsDrawer(obj, contents):
     point_param_lst = []
     for i in range(0, len(contents)):
@@ -91,8 +138,10 @@ def toolsDrawer(obj, contents):
 
             tmp_parameter_lst = stateRecorder(start, middle, end)
             parameter_lst.append(tmp_parameter_lst)
-
-            new_points = obj.typeJudgement((start[0], start[1]), (middle[0], middle[1]), (end[0], end[1]))
+            if circleJudgement(start, middle, end) is not None:
+                new_points = circleJudgement(start, middle, end)
+            else:
+                new_points = obj.typeJudgement((start[0], start[1]), (middle[0], middle[1]), (end[0], end[1]))
             for i in range(0, len(new_points)):
                 points_lst.append((int(new_points[i][0]), int(new_points[i][1])))
             point_param_lst.append([points_lst, parameter_lst])
@@ -106,6 +155,8 @@ def toolsDrawer(obj, contents):
         i = 0
         signal = True
         while i <= num_points - 2:
+            if not signal and i == 2:
+                break
             if num_points == 4 and i == 1 and signal:
                 p1 = (int(points[i][0]), int(points[i][1]))
                 p2 = (int(points[i + 1][0]), int(points[i + 1][1]))
@@ -119,8 +170,8 @@ def toolsDrawer(obj, contents):
             param1 = parameter[i]
             param2 = parameter[i + 1]
 
-            cv.circle(obj.board, p1, 3, (0, 0, 255), 2)
-            cv.circle(obj.board, p2, 3, (0, 0, 255), 2)
+            # cv.circle(obj.board, p1, 3, (0, 0, 255), 2)
+            # cv.circle(obj.board, p2, 3, (0, 0, 255), 2)
 
             if len(param1) == 2 and len(param2) == 2: # line 2 line
                 result_points.extend([p1, p2])
@@ -128,7 +179,8 @@ def toolsDrawer(obj, contents):
             elif len(param1) == 2 and len(param2) == 5: # line 2 circle
                 center = (param2[2], param2[3])
                 radius = param2[4]
-                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 100)
+                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 1000)
+
                 new_points_lst = obj.toolsPathPlanning(points_lst, param1, param2, center)
 
                 result_points.extend([p1, *new_points_lst, p2])
@@ -139,7 +191,7 @@ def toolsDrawer(obj, contents):
             elif len(param1) == 5 and len(param2) == 5: # circle 2 circle
                 center = (param2[2], param2[3])
                 radius = param2[4]
-                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 100)
+                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 1000)
                 new_points_lst = obj.toolsPathPlanning(points_lst, param1, param2, center)
 
                 result_points.extend([p1, *new_points_lst, p2])
@@ -153,9 +205,10 @@ def toolsDrawer(obj, contents):
         obj.drawToolsLine(result_points[0], result_points[-1])
 
 if __name__ == '__main__':
-    obj = Compansation(offset=8, type=0,work_pieces=False)
-    # contents = read("./parameters.txt")
-    contents = read("./demo1.txt")
+    path, type, offset, workpieces = uiDesign()
+    obj = Compansation(offset=offset, type=type,work_pieces=workpieces)
+    contents = read(path)
+    # contents = read("./demo2.txt")
 
     workPiecesDrawer(obj, contents)
     toolsDrawer(obj, contents)

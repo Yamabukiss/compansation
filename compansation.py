@@ -72,6 +72,22 @@ class Compansation():
     #
     #     return degree
 
+    def degreeFromDot(self, vector1, vector2):
+        vv1 = self.calculateL2(vector1)
+        vv2 = self.calculateL2(vector2)
+        uvector1 = (vector1[0] / vv1, vector1[1] / vv1)
+        uvector2 = (vector2[0] / vv2, vector1[1] / vv2)
+        dot = uvector1[0] * uvector2[0] + uvector1[1] * uvector2[1]
+        radian = math.acos(dot / (vv1 * vv2))
+        degree = self.radian2Degree(radian)
+        return degree
+
+    def degreeFromDotUnit(self, uvector1, uvector2):
+        dot = uvector1[0] * uvector2[0] + uvector1[1] * uvector2[1]
+        radian = math.acos(dot)
+        degree = self.radian2Degree(radian)
+        return degree
+
     def calculateTheta(self, p1, p2, p3):
         dx1 = p1[0] - p2[0] # notice
         dy1 = p1[1] - p2[1]
@@ -115,11 +131,37 @@ class Compansation():
         else:
             if degree < 90:
                 tmp_p21, tmp_p23 = self.insertionOperator(new_p21, new_p23, l, u_vector21, u_vector32)
-                # return [new_p1, new_p21, tmp_p21, tmp_p23, new_p23, new_p3]
                 return [new_p1, tmp_p21, tmp_p23, new_p3]
             else:
                  tmp_p = self.expandingOperator(new_p21, l, u_vector21)
                  return [new_p1,  tmp_p,  new_p3]
+
+    def typeJudgementDegree(self, p1, p2, p3, degree):
+        new_p1, new_p21, u_vector21 = self.calculateLineCompensationPoint(p1, p2)
+        new_p23, new_p3, u_vector32 = self.calculateLineCompensationPoint(p2, p3)
+
+        # if self.type:
+        #     degree = 360. - degree
+
+        l = self.calculateL(degree)
+
+        vector1 = (p3[0] - p1[0], p3[1] - p1[1])
+        vector2 = (new_p23[0] - new_p21[0], new_p23[1] - new_p21[1])
+
+        dot = vector1[0] * vector2[0] + vector1[1] * vector2[1]
+
+        if dot <= 0:
+            # l = self.calculateL(360 - degree)
+            tmp_p = self.shorteningOperator(new_p21, l, u_vector21)
+            return [new_p1, tmp_p, new_p3]
+        else:
+            if degree < 90:
+                tmp_p21, tmp_p23 = self.insertionOperator(new_p21, new_p23, l, u_vector21, u_vector32)
+                return [new_p1, tmp_p21, tmp_p23, new_p3]
+            else:
+                 tmp_p = self.expandingOperator(new_p21, l, u_vector21)
+                 return [new_p1,  tmp_p,  new_p3]
+
 
     def calculateLineCompensationPoint(self,p1, p2): # returns [p1, p2] after compensation
         x_o, y_o = p1[0], p1[1]
