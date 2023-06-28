@@ -1,5 +1,5 @@
 from compansation import Compansation, cv, math
-from ui import uiDesign
+from ui import uiDesign, uiEnd
 from file_operation import read
 
 def workPiecesDrawer(obj, contents):
@@ -183,11 +183,11 @@ def toolsDrawer(obj, contents):
             elif len(param1) == 2 and len(param2) == 5: # line 2 circle
                 center = (param2[2], param2[3])
                 radius = param2[4]
-                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 1000)
+                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 100)
 
                 new_points_lst, new_center = obj.toolsPathPlanning(points_lst, param1, param2, center)
 
-                update_points_lst = obj.generateArcPoints(new_center[0], new_center[1], radius, new_points_lst[0], p2, 1000)
+                update_points_lst = obj.generateArcPoints(new_center[0], new_center[1], radius, new_points_lst[0], p2, 100)
 
                 result_points.extend([p1, *update_points_lst, p2])
 
@@ -197,11 +197,11 @@ def toolsDrawer(obj, contents):
             elif len(param1) == 5 and len(param2) == 5: # circle 2 circle
                 center = (param2[2], param2[3])
                 radius = param2[4]
-                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 1000)
+                points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 100)
 
                 new_points_lst, new_center = obj.toolsPathPlanning(points_lst, param1, param2, center)
 
-                update_points_lst = obj.generateArcPoints(new_center[0], new_center[1], radius, result_points[-1], new_points_lst[-1], 1000)
+                update_points_lst = obj.generateArcPoints(new_center[0], new_center[1], radius, result_points[-1], new_points_lst[-1], 100)
 
                 result_points.extend([p1, *update_points_lst])
 
@@ -217,12 +217,13 @@ if __name__ == '__main__':
     path, type, offset, workpieces = uiDesign()
     obj = Compansation(offset=offset, type=type,work_pieces=workpieces)
     # obj = Compansation(offset=8, type=0,work_pieces=False)
-    contents = read(path)
+    contents = read("./parameters/" + path)
     # contents = read("./parameters.txt")
 
     workPiecesDrawer(obj, contents)
     toolsDrawer(obj, contents)
-    cv.imwrite("./images/workpieces.jpg",obj.board)
-    cv.imshow("output", obj.board)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    cv.imwrite("./images/result.jpg",obj.board)
+    uiEnd()
+    # cv.imshow("output", obj.board)
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()

@@ -16,8 +16,7 @@ def uiDesign():
 
     path = enterbox(msg="""
     请指定您的参数文件(*.txt)
-    默认情况下认为参数文件与程序同目录，此时您可以直接输入文件名
-    若在其他目录请输入绝对路径
+    默认情况下认为参数文件在parameters目录下,您可以直接输入文件名称(*.txt)
     """, title='输入参数文件', default='line1.txt')
 
     type = ccbox('请选择刀补类型;G41(左刀补) G42(右刀补)',title="刀补类型",choices=['G41', 'G42'])
@@ -25,5 +24,13 @@ def uiDesign():
     workpieces = ccbox('请选择您的工件轨迹是否需要封闭',title="轨迹封闭",choices=["是","否"])
 
     return path, type, offset, workpieces
+
+def uiEnd():
+    msgbox("""
+    结果图片已保存在images文件夹下(默认名称为result.jpg)
+    """, "完成", "结束")
+
+
 if __name__ == '__main__':
-    uiDesign()
+    # uiDesign()
+    uiEnd()
