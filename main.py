@@ -183,7 +183,7 @@ def toolsDrawer(obj, contents):
 
                 new_points_lst = obj.toolsPathPlanning(points_lst, param1, param2, center)
 
-                result_points.extend([p1, *new_points_lst, p2])
+                result_points.extend([*new_points_lst, p2])
 
             elif len(param1) == 5 and len(param2) == 2: # circle 2 line
                 result_points.extend([p1, p2])
@@ -205,13 +205,15 @@ def toolsDrawer(obj, contents):
         obj.drawToolsLine(result_points[0], result_points[-1])
 
 if __name__ == '__main__':
-    path, type, offset, workpieces = uiDesign()
-    obj = Compansation(offset=offset, type=type,work_pieces=workpieces)
-    contents = read(path)
-    # contents = read("./demo2.txt")
+    # path, type, offset, workpieces = uiDesign()
+    # obj = Compansation(offset=offset, type=type,work_pieces=workpieces)
+    obj = Compansation(offset=8, type=0,work_pieces=False)
+    # contents = read(path)
+    contents = read("./demo2.txt")
 
     workPiecesDrawer(obj, contents)
     toolsDrawer(obj, contents)
+    cv.imwrite("./images/image3_2.jpg",obj.board)
     cv.imshow("output", obj.board)
     cv.waitKey(0)
     cv.destroyAllWindows()
