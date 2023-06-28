@@ -53,8 +53,10 @@ class Compansation():
         self.drawCircle(p1, p2, center, radius, (0, 255, 0))
 
     def calculateL(self, alpha):
-        return abs(self.offset / math.tan( alpha / 2))
-
+        try:
+            return abs(self.offset / math.tan( alpha / 2))
+        except:
+            return 0
     def calculateL2(self, vector):
         return math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
 
@@ -271,42 +273,45 @@ class Compansation():
         tmp_vector = ((tmp_vector1[0] + tmp_vector2[0]) // 2, (tmp_vector1[1] + tmp_vector2[1]) // 2)
 
         new_points_lst = []
+        # new_center_x = 0
+        # new_center_y = 0
+        l2_vector = self.calculateL2(tmp_vector)
+        uoa = (tmp_vector[0] / l2_vector, tmp_vector[1] / l2_vector)
+
         if mult > 0:
             if self.type == 0:# G42
                 for point in points_lst:
-                    # vector = (center[0] - point[0], center[1] - point[1])
-                    l2_vector = self.calculateL2(tmp_vector)
-                    uoa = (tmp_vector[0] / l2_vector, tmp_vector[1] / l2_vector)
                     new_x = point[0] + uoa[0] * self.offset
                     new_y = point[1] + uoa[1] * self.offset
                     new_points_lst.append((int(new_x), int(new_y)))
+                new_center_x = center[0] + uoa[0] * self.offset
+                new_center_y = center[1] + uoa[1] * self.offset
             else:
                 for point in points_lst:
-                    # vector = (center[0] - point[0], center[1] - point[1])
-                    l2_vector = self.calculateL2(tmp_vector)
-                    uoa = (tmp_vector[0] / l2_vector, tmp_vector[1] / l2_vector)
                     new_x = point[0] - uoa[0] * self.offset
                     new_y = point[1] - uoa[1] * self.offset
                     new_points_lst.append((int(new_x), int(new_y)))
+                new_center_x = center[0] - uoa[0] * self.offset
+                new_center_y = center[1] - uoa[1] * self.offset
+
         else:
             if self.type == 1:# G41
                 for point in points_lst:
-                    # vector = (center[0] - point[0], center[1] - point[1])
-                    l2_vector = self.calculateL2(tmp_vector)
-                    uoa = (tmp_vector[0] / l2_vector, tmp_vector[1] / l2_vector)
                     new_x = point[0] + uoa[0] * self.offset
                     new_y = point[1] + uoa[1] * self.offset
-
                     new_points_lst.append((int(new_x), int(new_y)))
+                new_center_x = center[0] + uoa[0] * self.offset
+                new_center_y = center[1] + uoa[1] * self.offset
+
             else:
                 for point in points_lst:
-                    # vector = (center[0] - point[0], center[1] - point[1])
-                    l2_vector = self.calculateL2(tmp_vector)
-                    uoa = (tmp_vector[0] / l2_vector, tmp_vector[1] / l2_vector)
                     new_x = point[0] - uoa[0] * self.offset
                     new_y = point[1] - uoa[1] * self.offset
                     new_points_lst.append((int(new_x), int(new_y)))
-        return new_points_lst
+                new_center_x = center[0] - uoa[0] * self.offset
+                new_center_y = center[1] - uoa[1] * self.offset
+
+        return new_points_lst, (int(new_center_x), int(new_center_y))
 
 
 

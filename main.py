@@ -30,8 +30,12 @@ def workPiecesDrawer(obj, contents):
                 end = (after[0], after[1])
                 center = (after[2], after[3])
                 radius = after[4]
+                points_lst = obj.generateArcPoints(center[0], center[1], radius, start, end, 1000)
+                for i in range(0, len(points_lst) - 1):
+                    obj.drawWorkPiecesLine(points_lst[i], points_lst[i + 1])
 
-                obj.drawWorkPiecesCircle(start, end, center, radius)
+                # obj.drawWorkPiecesCircle(start, end, center, radius)
+                # obj.drawWorkPiecesCircle(start, end, center, radius)
             else:
                 raise ValueError("You may have entered the wrong format in the parameters file")
 
@@ -181,9 +185,11 @@ def toolsDrawer(obj, contents):
                 radius = param2[4]
                 points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 1000)
 
-                new_points_lst = obj.toolsPathPlanning(points_lst, param1, param2, center)
+                new_points_lst, new_center = obj.toolsPathPlanning(points_lst, param1, param2, center)
 
-                result_points.extend([*new_points_lst, p2])
+                update_points_lst = obj.generateArcPoints(new_center[0], new_center[1], radius, new_points_lst[0], p2, 1000)
+
+                result_points.extend([p1, *update_points_lst, p2])
 
             elif len(param1) == 5 and len(param2) == 2: # circle 2 line
                 result_points.extend([p1, p2])
@@ -192,9 +198,12 @@ def toolsDrawer(obj, contents):
                 center = (param2[2], param2[3])
                 radius = param2[4]
                 points_lst = obj.generateArcPoints(center[0], center[1], radius, param1, param2, 1000)
-                new_points_lst = obj.toolsPathPlanning(points_lst, param1, param2, center)
 
-                result_points.extend([p1, *new_points_lst, p2])
+                new_points_lst, new_center = obj.toolsPathPlanning(points_lst, param1, param2, center)
+
+                update_points_lst = obj.generateArcPoints(new_center[0], new_center[1], radius, result_points[-1], new_points_lst[-1], 1000)
+
+                result_points.extend([p1, *update_points_lst])
 
             else:
                 raise ValueError("You may have entered the wrong format in the parameters file")
@@ -205,15 +214,15 @@ def toolsDrawer(obj, contents):
         obj.drawToolsLine(result_points[0], result_points[-1])
 
 if __name__ == '__main__':
-    # path, type, offset, workpieces = uiDesign()
-    # obj = Compansation(offset=offset, type=type,work_pieces=workpieces)
-    obj = Compansation(offset=8, type=0,work_pieces=False)
-    # contents = read(path)
-    contents = read("./demo2.txt")
+    path, type, offset, workpieces = uiDesign()
+    obj = Compansation(offset=offset, type=type,work_pieces=workpieces)
+    # obj = Compansation(offset=8, type=0,work_pieces=False)
+    contents = read(path)
+    # contents = read("./demo2.txt")
 
     workPiecesDrawer(obj, contents)
     toolsDrawer(obj, contents)
-    cv.imwrite("./images/image3_2.jpg",obj.board)
+    # cv.imwrite("./images/image4_3.jpg",obj.board)
     cv.imshow("output", obj.board)
     cv.waitKey(0)
     cv.destroyAllWindows()
