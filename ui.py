@@ -18,7 +18,7 @@ def uiDesign():
     请指定您的参数文件(*.txt)
     默认情况下认为参数文件与程序同目录，此时您可以直接输入文件名
     若在其他目录请输入绝对路径
-    """, title='输入参数文件', default='demo1.txt')
+    """, title='输入参数文件', default='line1.txt')
 
     type = ccbox('请选择刀补类型;G41(左刀补) G42(右刀补)',title="刀补类型",choices=['G41', 'G42'])
     offset = int(enterbox("请指定刀具半径", "刀具半径", "8"))

@@ -218,11 +218,11 @@ if __name__ == '__main__':
     obj = Compansation(offset=offset, type=type,work_pieces=workpieces)
     # obj = Compansation(offset=8, type=0,work_pieces=False)
     contents = read(path)
-    # contents = read("./demo2.txt")
+    # contents = read("./parameters.txt")
 
     workPiecesDrawer(obj, contents)
     toolsDrawer(obj, contents)
-    # cv.imwrite("./images/image4_3.jpg",obj.board)
+    cv.imwrite("./images/workpieces.jpg",obj.board)
     cv.imshow("output", obj.board)
     cv.waitKey(0)
     cv.destroyAllWindows()
