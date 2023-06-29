@@ -149,6 +149,23 @@ def toolsDrawer(obj, contents):
             for i in range(0, len(new_points)):
                 points_lst.append((int(new_points[i][0]), int(new_points[i][1])))
             point_param_lst.append([points_lst, parameter_lst])
+        elif i == len(contents) - 1 and obj.work_pieces:
+            start = tuple(contents[-2])
+            middle = tuple(contents[0])
+            end = tuple(contents[1])
+            points_lst = []
+            parameter_lst = []
+
+            tmp_parameter_lst = stateRecorder(start, middle, end)
+            parameter_lst.append(tmp_parameter_lst)
+            if circleJudgement(start, middle, end) is not None:
+                new_points = circleJudgement(start, middle, end)
+            else:
+                new_points = obj.typeJudgement((start[0], start[1]), (middle[0], middle[1]), (end[0], end[1]))
+            for i in range(0, len(new_points)):
+                points_lst.append((int(new_points[i][0]), int(new_points[i][1])))
+            point_param_lst.append([points_lst, parameter_lst])
+
         else:
             continue
 
@@ -210,19 +227,19 @@ def toolsDrawer(obj, contents):
             i += 1
     for i in range(0, len(result_points) - 1):
         obj.drawToolsLine(result_points[i], result_points[i + 1])
-    if obj.work_pieces:
-        obj.drawToolsLine(result_points[0], result_points[-1])
+    # if obj.work_pieces:
+    #     obj.drawToolsLine(result_points[0], result_points[-1])
 
 if __name__ == '__main__':
     path, type, offset, workpieces = uiDesign()
     obj = Compansation(offset=offset, type=type,work_pieces=workpieces)
-    # obj = Compansation(offset=8, type=0,work_pieces=False)
+    # obj = Compansation(offset=8, type=0,work_pieces=True)
     contents = read("./parameters/" + path)
-    # contents = read("./parameters.txt")
+    # contents = read("./parameters/parameters.txt")
 
     workPiecesDrawer(obj, contents)
     toolsDrawer(obj, contents)
-    cv.imwrite("./images/result.jpg",obj.board)
+    # cv.imwrite("./images/image1_3.jpg",obj.board)
     uiEnd()
     # cv.imshow("output", obj.board)
     # cv.waitKey(0)
